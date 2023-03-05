@@ -14,8 +14,7 @@ class Location:
     def distanceTo(self, other: "Location") -> float:
         loc1 = (self.latitude, self.longitude)
         loc2 = (other.latitude, other.longitude)
-        return hs.haversine(loc1, loc2)
-
+        return round(hs.haversine(loc1, loc2), 2)
 
 class StreetFinder:
     API_URL: str = "https://capap.gugik.gov.pl/api/fts/gc/pkt"

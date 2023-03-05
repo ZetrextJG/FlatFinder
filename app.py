@@ -9,10 +9,10 @@ from bs4.element import Tag
 
 import config
 from listings import Listing, OlxListing, OtodomListing
-from offers import OfferBuilder
+from db_connection import OffersDatabase
+from offers import Offer, OfferBuilder
 
-logging.basicConfig(level=logging.WARN)
-
+logging.basicConfig(level=logging.INFO)
 
 def isFromOtodom(link: str) -> bool:
     return link.startswith("https://www.otodom") or link.startswith("https://otodom")
@@ -50,19 +50,26 @@ def extract_listings(listings_crawler: BeautifulSoup) -> Generator[Listing, None
 
 
 def main():
-    logging.debug("Fetching offer listing from OLX")
+    logging.info("Connecting to MongoDB")
+    db = OffersDatabase()
+    logging.info("Fetching offer listing from OLX")
     res = requests.get(config.SCRAPE_URL)
-    logging.debug("Extracting offers from downloaded HTML")
+    logging.info("Extracting offers from downloaded HTML")
     soup = BeautifulSoup(res.content, "html.parser")
     for listing in extract_listings(soup):
         builder = OfferBuilder(listing)
         builder.addRent()
         builder.addBlacklisted()
         builder.addDistance()
-        offer = builder.build()
+        offer: Offer = builder.build()
 
         if offer.totalCost() < config.MAXIMUM_COST and not offer.isTooFar():
+            if db.doesIdExists(offer._id): continue
+            logging.info(f"Found new promissing offer: {offer.title}")
             __import__("pprint").pprint(offer.to_dict())
+            logging.info(f"Uploading offer to DB: {offer.title}")
+            db.insertOffer(offer)
+            # logging.info(f"Sending emails with offer: {offer.title}")
 
 
 if __name__ == "__main__":

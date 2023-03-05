@@ -2,6 +2,7 @@ import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional
+from hashlib import sha1
 
 from dataclasses_json import dataclass_json
 
@@ -25,7 +26,9 @@ class Offer:
     rent: Optional[int]
 
     def __post_init__(self) -> None:
-        self._id = hash(f"{self.title} | {self.price}")
+        message = f"{self.title} | {self.price}"
+        hash = sha1(message.encode())
+        self._id = hash.hexdigest()
 
     def totalCost(self) -> float:
         if not self.rent:
@@ -37,7 +40,7 @@ class Offer:
             return True
         if self.distance is None:
             return False  # Cannot know for sure
-        return self.distance <= config.MAXIMUX_DISTANCE
+        return self.distance > config.MAXIMUX_DISTANCE
 
 
 @dataclass

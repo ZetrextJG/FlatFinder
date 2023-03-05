@@ -14,7 +14,7 @@ from parsers import DescriptionParser
 @dataclass_json
 @dataclass
 class Offer:
-    _id: str = field(init=False)
+    _id: str
     title: str
     link: str
     price: int
@@ -24,11 +24,6 @@ class Offer:
     distance: Optional[float]
     backlisted: Optional[bool]
     rent: Optional[int]
-
-    def __post_init__(self) -> None:
-        message = f"{self.title} | {self.price}"
-        hash = sha1(message.encode())
-        self._id = hash.hexdigest()
 
     def totalCost(self) -> float:
         if not self.rent:
@@ -93,6 +88,7 @@ class OfferBuilder:
     def build(self) -> Offer:
         logging.debug(f"Creating offer object for: {self.listing.title}")
         return Offer(
+            self.listing._id,
             self.listing.title,
             self.listing.link,
             self.listing.price,

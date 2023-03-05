@@ -9,6 +9,7 @@ from bs4.element import Tag
 
 import config
 from db_connection import OffersDatabase
+from email_connection import EmailContoller
 from listings import Listing, OlxListing, OtodomListing
 from offers import Offer, OfferBuilder
 
@@ -51,6 +52,7 @@ def extract_listings(listings_crawler: BeautifulSoup) -> Generator[Listing, None
 
 
 def main():
+    emailController = EmailContoller()
     logging.info("Connecting to MongoDB")
     db = OffersDatabase()
     logging.info("Fetching offer listing from OLX")
@@ -58,20 +60,23 @@ def main():
     logging.info("Extracting offers from downloaded HTML")
     soup = BeautifulSoup(res.content, "html.parser")
     for listing in extract_listings(soup):
+        # Skip already processed listings
+        if db.doesIdExists(listing._id):
+            continue
+        # Builder new offers
         builder = OfferBuilder(listing)
         builder.addRent()
         builder.addBlacklisted()
         builder.addDistance()
         offer: Offer = builder.build()
-
+        # Check for promissing offers
         if offer.totalCost() < config.MAXIMUM_COST and not offer.isTooFar():
-            if db.doesIdExists(offer._id):
-                continue
             logging.info(f"Found new promissing offer: {offer.title}")
             __import__("pprint").pprint(offer.to_dict())
             logging.info(f"Uploading offer to DB: {offer.title}")
             db.insertOffer(offer)
-            # logging.info(f"Sending emails with offer: {offer.title}")
+            logging.info(f"Sending emails with offer: {offer.title}")
+            emailController.sendOfferNotifications(offer)
 
 
 if __name__ == "__main__":

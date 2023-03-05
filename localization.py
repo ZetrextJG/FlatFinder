@@ -1,8 +1,8 @@
 from typing import Optional
 import requests
-from dataclasses import dataclass
 import numpy as np
 import haversine as hs
+from dataclasses import dataclass
 
 @dataclass
 class Location:

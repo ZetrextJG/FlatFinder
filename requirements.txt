@@ -1,0 +1,10 @@
+numpy
+beautifulsoup4
+dataclasses-json
+requests
+unidecode
+haversine
+
+pytest
+black
+isort

@@ -16,6 +16,7 @@ class Location:
         loc2 = (other.latitude, other.longitude)
         return round(hs.haversine(loc1, loc2), 2)
 
+
 class StreetFinder:
     API_URL: str = "https://capap.gugik.gov.pl/api/fts/gc/pkt"
     city: str

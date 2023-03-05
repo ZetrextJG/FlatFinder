@@ -1,8 +1,8 @@
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional
 from hashlib import sha1
+from typing import Optional
 
 from dataclasses_json import dataclass_json
 

@@ -58,7 +58,7 @@ class OlxListing(Listing):
         descTag: Tag = self.crawler.find("div", {"data-cy": "ad_description"})
         if descTag is None:
             raise Exception(f"No description in listing: {self.title}")
-        return descTag.get_text()
+        return descTag.get_text().removeprefix("Opis")
 
 
 class OtodomListing(Listing):
@@ -90,4 +90,4 @@ class OtodomListing(Listing):
         descTag: Tag = self.crawler.find("div", {"data-cy": "adPageAdDescription"})
         if descTag is None:
             raise Exception(f"No description in listing: {self.title}")
-        return descTag.get_text()
+        return descTag.get_text().removeprefix("Opis")

@@ -8,11 +8,12 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 
 import config
-from listings import Listing, OlxListing, OtodomListing
 from db_connection import OffersDatabase
+from listings import Listing, OlxListing, OtodomListing
 from offers import Offer, OfferBuilder
 
 logging.basicConfig(level=logging.INFO)
+
 
 def isFromOtodom(link: str) -> bool:
     return link.startswith("https://www.otodom") or link.startswith("https://otodom")
@@ -64,7 +65,8 @@ def main():
         offer: Offer = builder.build()
 
         if offer.totalCost() < config.MAXIMUM_COST and not offer.isTooFar():
-            if db.doesIdExists(offer._id): continue
+            if db.doesIdExists(offer._id):
+                continue
             logging.info(f"Found new promissing offer: {offer.title}")
             __import__("pprint").pprint(offer.to_dict())
             logging.info(f"Uploading offer to DB: {offer.title}")

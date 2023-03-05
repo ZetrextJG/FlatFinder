@@ -1,5 +1,5 @@
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional
 
@@ -13,6 +13,7 @@ from parsers import DescriptionParser
 @dataclass_json
 @dataclass
 class Offer:
+    _id: str = field(init=False)
     title: str
     link: str
     price: int
@@ -22,6 +23,9 @@ class Offer:
     distance: Optional[float]
     backlisted: Optional[bool]
     rent: Optional[int]
+
+    def __post_init__(self) -> None:
+        self._id = hash(f"{self.title} | {self.price}")
 
     def totalCost(self) -> float:
         if not self.rent:

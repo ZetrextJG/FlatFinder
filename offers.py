@@ -1,11 +1,14 @@
-from dataclasses import dataclass
-from dataclasses_json import dataclass_json
-from datetime import datetime
 import logging
-from listings import Listing
+from dataclasses import dataclass
+from datetime import datetime
 from typing import Optional
+
+from dataclasses_json import dataclass_json
+
 import config
+from listings import Listing
 from parsers import DescriptionParser
+
 
 @dataclass_json
 @dataclass
@@ -26,8 +29,10 @@ class Offer:
         return self.price + self.rent
 
     def isTooFar(self) -> bool:
-        if self.backlisted: return True
-        if self.distance is None: return False  # Cannot know for sure
+        if self.backlisted:
+            return True
+        if self.distance is None:
+            return False  # Cannot know for sure
         return self.distance <= config.MAXIMUX_DISTANCE
 
 
@@ -60,8 +65,10 @@ class OfferBuilder:
         displayedRent = self.listing.getDisplayedRent()
         hiddenRent = self.parser.findHiddenRent()
         if hiddenRent is not None or displayedRent is not None:
-            if displayedRent is None: displayedRent = 0
-            if hiddenRent is None: hiddenRent = 0
+            if displayedRent is None:
+                displayedRent = 0
+            if hiddenRent is None:
+                hiddenRent = 0
             self.rent = max(hiddenRent, displayedRent)
 
     def addBlacklisted(self) -> None:
@@ -79,7 +86,12 @@ class OfferBuilder:
     def build(self) -> Offer:
         logging.debug(f"Creating offer object for: {self.listing.title}")
         return Offer(
-            self.listing.title, self.listing.link, self.listing.price,
-            self.createdAt, self.description, self.distance,
-            self.backlisted, self.rent
+            self.listing.title,
+            self.listing.link,
+            self.listing.price,
+            self.createdAt,
+            self.description,
+            self.distance,
+            self.backlisted,
+            self.rent,
         )

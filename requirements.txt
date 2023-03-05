@@ -4,6 +4,8 @@ dataclasses-json
 requests
 unidecode
 haversine
+python-dotenv
+pymongo
 
 pytest
 black

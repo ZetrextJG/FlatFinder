@@ -1,10 +1,12 @@
-from abc import ABC, abstractmethod
 import logging
-from bs4 import BeautifulSoup
-import requests
-from typing import Optional
 import re
+from abc import ABC, abstractmethod
+from typing import Optional
+
+import requests
+from bs4 import BeautifulSoup
 from bs4.element import Tag
+
 
 class Listing(ABC):
     title: str
@@ -18,7 +20,7 @@ class Listing(ABC):
     @abstractmethod
     def getDescription(self) -> str:
         pass
-    
+
     def createCrawler(self) -> BeautifulSoup:
         logging.debug(f"Fetching link confent for: {self.title}")
         offer_res = requests.get(self.link)
@@ -53,10 +55,7 @@ class OlxListing(Listing):
 
     def getDescription(self) -> str:
         logging.debug(f"Searching for description in: {self.title}")
-        descTag: Tag = self.crawler.find(
-            "div", 
-            {"data-cy": "ad_description"}
-        )
+        descTag: Tag = self.crawler.find("div", {"data-cy": "ad_description"})
         if descTag is None:
             raise Exception(f"No description in listing: {self.title}")
         return descTag.get_text()
@@ -79,21 +78,16 @@ class OtodomListing(Listing):
         logging.debug(f"Searching for displayed rent in: {self.title}")
         regex = re.compile(r'"key":"rent","value":"(\d+)"')
         script_data = " ".join(
-            [script.get_text() for script in 
-                self.crawler.find_all("script")]
+            [script.get_text() for script in self.crawler.find_all("script")]
         )
         match = re.search(regex, script_data)
-        if match is None: 
+        if match is None:
             return None
         return int(match.group(1))
 
     def getDescription(self) -> str:
         logging.debug(f"Searching for description in: {self.title}")
-        descTag: Tag = self.crawler.find(
-            "div", 
-            {"data-cy": "adPageAdDescription"}
-        )
+        descTag: Tag = self.crawler.find("div", {"data-cy": "adPageAdDescription"})
         if descTag is None:
             raise Exception(f"No description in listing: {self.title}")
         return descTag.get_text()
-

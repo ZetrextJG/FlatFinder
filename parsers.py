@@ -1,8 +1,11 @@
-from unidecode import unidecode
 import re
 from typing import Optional, Set
+
+from unidecode import unidecode
+
 import config
 from localization import Location, StreetFinder
+
 
 class DescriptionParser:
     description: str
@@ -30,23 +33,25 @@ class DescriptionParser:
             if rent_word in self.wordsSet:
                 splited = self.descriptionParser.split(rent_word)
                 match = re.search("\d+", splited[1])
-                if match is None: continue
+                if match is None:
+                    continue
                 probable_output = float(match.group())
                 # Sanity check
-                if probable_output >= 0 and probable_output < 2000: 
+                if probable_output >= 0 and probable_output < 2000:
                     return probable_output
 
         match = re.search("plus\s*(\d+)\s*", self.description.lower())
         if match is not None:
             probable_output = float(match.group(1))
-            if probable_output >= 0 and probable_output < 2000: 
+            if probable_output >= 0 and probable_output < 2000:
                 return probable_output
-        
+
         return None
 
     def findPossibleLocation(self) -> Optional[Location]:
         match = re.search(config.STREET_REGEX, self.description)
-        if not match: return None
-        worded_location = match.group(2) # Group number based on regex
+        if not match:
+            return None
+        worded_location = match.group(2)  # Group number based on regex
         finder = StreetFinder(city="Warszawa")
         return finder.findAverageLocation(worded_location)

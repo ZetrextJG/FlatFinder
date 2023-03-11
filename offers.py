@@ -1,19 +1,16 @@
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
-from hashlib import sha1
 from typing import Optional
 
-from dataclasses_json import dataclass_json
+from dataclasses_json import DataClassJsonMixin
 
 import config
 from listings import Listing
 from parsers import DescriptionParser
 
-
-@dataclass_json
 @dataclass
-class Offer:
+class Offer(DataClassJsonMixin):
     _id: str
     title: str
     link: str
@@ -43,7 +40,7 @@ class OfferBuilder:
     listing: Listing
     createdAt: datetime
 
-    description: Optional[str]
+    description: str
     distance: Optional[float]
     backlisted: Optional[bool]
     rent: Optional[int]
@@ -71,7 +68,7 @@ class OfferBuilder:
                 displayedRent = 0
             if hiddenRent is None:
                 hiddenRent = 0
-            self.rent = max(hiddenRent, displayedRent)
+            self.rent = int(max(hiddenRent, displayedRent))
 
     def addBlacklisted(self) -> None:
         logging.debug(f"Checking for blaclisted words for: {self.listing.title}")

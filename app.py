@@ -36,17 +36,27 @@ def create_listing(title: str, price: float, link: str) -> Optional[Listing]:
 
 
 def extract_listings(listings_crawler: BeautifulSoup) -> Generator[Listing, None, None]:
-    found_listings = listings_crawler.find_all("div", {"data-cy": "l-card"})
-    for offerTag in found_listings:
-        offerTag: Tag = found_listings.pop().find("a")
-        title: str = offerTag.find("h6").get_text()
+    foundListings = listings_crawler.find_all("div", {"data-cy": "l-card"})
+    for offerTag in foundListings:
+        offerTag: Tag = foundListings.pop().find("a")
+        h6Tag = offerTag.find("h6")
+        if h6Tag is None:
+            raise Exception("Could not find required tag inside html")
+        title: str = h6Tag.get_text()
         # Olx links lack the https prefix
-        link: str = offerTag.get("href")
+        link = offerTag.get("href")
+        if type(link) != str:
+            raise Exception("Incompatible href")
         if not link.startswith("https://"):
             link = "https://olx.pl" + link
-        price_text: str = offerTag.find("p", {"data-testid": "ad-price"}).get_text()
-        price = int(re.search(r"\d+", price_text.replace(" ", "")).group(0))
-
+        priceTag = offerTag.find("p", {"data-testid": "ad-price"})
+        if priceTag is None:
+            raise Exception("Could not find price in listing")
+        priceText: str = priceTag.get_text()
+        priceMatch = re.search(r"\d+", priceText.replace(" ", ""))
+        if priceMatch is None:
+            raise Exception("Could not find price in listing")
+        price = int(priceMatch.group(0))
         listing = create_listing(title, price, link)
         if listing is not None:
             yield listing
@@ -59,6 +69,8 @@ def main():
 
     while True:
         logging.info("Fetching offer listing from OLX")
+        if config.SCRAPE_URL is None:
+            raise Exception("Could not load config properly")
         res = requests.get(config.SCRAPE_URL)
         logging.info("Extracting offers from downloaded HTML")
         soup = BeautifulSoup(res.content, "html.parser")
@@ -80,7 +92,7 @@ def main():
                 db.insertOffer(offer)
                 logging.info(f"Sending emails with offer: {offer.title}")
                 emailController.sendOfferNotifications(offer)
-        time.sleep(420) # Sleep for 7 minutes
+        time.sleep(420)  # Sleep for 7 minutes
 
 
 if __name__ == "__main__":

@@ -1,13 +1,12 @@
 import logging
 import re
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from hashlib import sha1
 from typing import Optional
 
 import requests
 from bs4 import BeautifulSoup
-from bs4.element import Tag
 
 
 def remove_prefix(text: str, prefix: str) -> str:
@@ -18,7 +17,7 @@ def remove_prefix(text: str, prefix: str) -> str:
 class Listing(ABC):
     _id: str
     title: str
-    price: float
+    price: int
     link: str
 
     @abstractmethod
@@ -44,7 +43,7 @@ class OlxListing(Listing):
     title: str
     price: float
     link: str
-    crawler: BeautifulSoup
+    crawler: "BeautifulSoup|None"
 
     def __init__(self, title: str, price: float, link: str) -> None:
         self.title = title
@@ -65,14 +64,17 @@ class OlxListing(Listing):
         for liTag in self.crawler.find_all("li"):
             text = liTag.get_text()
             if text.startswith("Czynsz"):
-                rent = int(re.search(r"\d+", text).group(0))
+                rentMatch = re.search(r"\d+", text)
+                if rentMatch is None: 
+                    return rent
+                rent = int(rentMatch.group(0))
         return rent
 
     def getDescription(self) -> str:
         if self.crawler is None:
             self.crawler = self.createCrawler()
         logging.debug(f"Searching for description in: {self.title}")
-        descTag: Tag = self.crawler.find("div", {"data-cy": "ad_description"})
+        descTag  = self.crawler.find("div", {"data-cy": "ad_description"})
         if descTag is None:
             raise Exception(f"No description in listing: {self.title}")
         text = descTag.get_text()
@@ -84,7 +86,7 @@ class OtodomListing(Listing):
     title: str
     price: float
     link: str
-    crawler: BeautifulSoup
+    crawler: "BeautifulSoup|None"
 
     def __init__(self, title: str, price: float, link: str) -> None:
         self.title = title
@@ -114,7 +116,7 @@ class OtodomListing(Listing):
         if self.crawler is None:
             self.crawler = self.createCrawler()
         logging.debug(f"Searching for description in: {self.title}")
-        descTag: Tag = self.crawler.find("div", {"data-cy": "adPageAdDescription"})
+        descTag = self.crawler.find("div", {"data-cy": "adPageAdDescription"})
         if descTag is None:
             raise Exception(f"No description in listing: {self.title}")
         text = descTag.get_text()

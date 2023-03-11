@@ -21,7 +21,7 @@ class OffersDatabase:
         self.db = self.cluster["main"]
         self.collection = self.db["offers"]
 
-    def doesIdExists(self, id: int) -> bool:
+    def doesIdExists(self, id: str) -> bool:
         return self.collection.count_documents({"_id": id}) > 0
 
     def insertOffer(self, offer: Offer) -> None:

@@ -32,7 +32,7 @@ class DescriptionParser:
         for rent_word in ["czynsz", "czynszem", "czynszu"]:
             if rent_word in self.wordsSet:
                 splited = self.descriptionParser.split(rent_word)
-                match = re.search("\d+", splited[1])
+                match = re.search(r"\d+", splited[1])
                 if match is None:
                     continue
                 probable_output = float(match.group())
@@ -40,7 +40,7 @@ class DescriptionParser:
                 if probable_output >= 0 and probable_output < 2000:
                     return probable_output
 
-        match = re.search("plus\s*(\d+)\s*", self.description.lower())
+        match = re.search(r"plus\s*(\d+)\s*", self.description.lower())
         if match is not None:
             probable_output = float(match.group(1))
             if probable_output >= 0 and probable_output < 2000:
